@@ -41,13 +41,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
-    VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
-    bytes32 private immutable i_gasLane;
-    uint64 private immutable i_subscriptionId;
-    uint32 private immutable i_callbackGasLimit;
+    bytes32 private immutable i_keyHash;
+    uint256 private immutable i_subscriptionId;
     address payable[] private s_players;
     uint256 private s_lastTimeStamp;
-
     /** Events */
     event EnteredRaffle(address indexed player);
 
@@ -59,11 +56,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 subscriptionId,
         uint32 callbackGasLimit,
         uint32 numWords
-    ) {
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+        i_subscriptionId = subscriptionId;
         i_entranceFee = entranceFee;
         i_interval = interval;
-        i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinator);
-        i_gasLane = gasLane;
+        i_keyHash = gasLane;
         s_lastTimeStamp = block.timestamp;
         i_callbackGasLimit = callbackGasLimit;
     }
@@ -91,19 +88,19 @@ contract Raffle is VRFConsumerBaseV2Plus {
         //     )
         // );
 
-        requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: s_keyHash,
-                subId: s_subscriptionId,
-                requestConfirmations: requestConfirmations,
+        VRFV2PlusClient.RandomWordsRequest request = VRFV2PlusClient
+            .RandomWordsRequest({
+                keyHash: i_keyHash,
+                subId: i_subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
                 callbackGasLimit: callbackGasLimit,
-                numWords: numWords,
+                numWords: NUM_WORDS,
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
                 )
-            })
-        );
+            });
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
     }
     /** Getter Function*/
 
