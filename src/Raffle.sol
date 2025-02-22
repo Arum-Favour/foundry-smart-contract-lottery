@@ -81,14 +81,28 @@ contract Raffle is VRFConsumerBaseV2Plus {
             revert();
         }
         //Here we pick a random winner using Chainlink VRF
-        uint256 requestId = i_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest(
-                i_gasLane,
-                i_subscriptionId,
-                REQUEST_CONFIRMATIONS,
-                i_callbackGasLimit,
-                NUM_WORDS
-            )
+        // uint256 requestId = i_vrfCoordinator.requestRandomWords(
+        //     VRFV2PlusClient.RandomWordsRequest(
+        //         i_gasLane,
+        //         i_subscriptionId,
+        //         REQUEST_CONFIRMATIONS,
+        //         i_callbackGasLimit,
+        //         NUM_WORDS
+        //     )
+        // );
+
+        requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
         );
     }
     /** Getter Function*/
