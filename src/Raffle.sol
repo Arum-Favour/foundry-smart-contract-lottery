@@ -37,6 +37,13 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__NotEnoughEthSent();
     error Raffle__TransferFailed();
 
+    /** Type Declarations */
+    enum RaffleState {
+        OPEN,
+        CLOSED
+    }
+
+    /** STATE VARIABLES */
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
 
